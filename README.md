@@ -15,3 +15,5 @@ https://www.rabbitmq.com/cli.html
 https://pika.readthedocs.io/en/stable/examples.html
 https://pika.readthedocs.io/en/stable/examples/asynchronous_publisher_example.html
 https://pika.readthedocs.io/en/stable/examples/asynchronous_consumer_example.html
+
+https://www.rabbitmq.com/tutorials/tutorial-five-python.html
