@@ -1,0 +1,6 @@
+pika
+python-dateutil
+PyYAML
+Flask
+Flask-Cors
+Werkzeug

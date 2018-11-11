@@ -1,0 +1,119 @@
+app:
+  hostname: "127.0.0.1"
+  tcp_port: "80"
+  log_level: "DEBUG"
+  flask_debug: False
+redis:
+  hostname: "localhost"
+  port: 6379
+  db: 0
+  connect_timeout: 10
+rabbitmq:
+  hostname: "localhost"
+  port: 5672
+  username: "guest"
+  password: "guest"
+  exchanges:
+    - exchange: "unprocessed"
+      type: "topic"
+      durable: True
+    - exchange: "error"
+      type: "topic"
+      durable: True
+    - exchange: "exchange1"
+      type: "topic"
+      durable: True
+      arguments:
+        alternate-exchange: "unprocessed"
+  queues:
+    - queue: "unprocessed"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-message-ttl: 604800
+    - queue: "error"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-message-ttl: 604800
+    - queue: "queue1"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-dead-letter-exchange: "error"
+    - queue: "queue2"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-dead-letter-exchange: "error"
+    - queue: "queue3"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-dead-letter-exchange: "error"
+    - queue: "queue4"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-dead-letter-exchange: "error"
+    - queue: "queue5"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-dead-letter-exchange: "error"
+    - queue: "queue6"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-dead-letter-exchange: "error"
+    - queue: "queue7"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-dead-letter-exchange: "error"
+    - queue: "queue8"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-dead-letter-exchange: "error"
+  bindings:
+    - exchange: "unprocessed"
+      queue: "unprocessed"
+      routing_key: "*"
+    - exchange: "error"
+      queue: "error"
+      routing_key: "*"
+    - exchange: "exchange1"
+      queue: "queue1"
+      routing_key: "hello_topic"
+    - exchange: "exchange1"
+      queue: "queue2"
+      routing_key: "queue2"
+    - exchange: "exchange1"
+      queue: "queue3"
+      routing_key: "mytopic.*"
+    - exchange: "exchange1"
+      queue: "queue4"
+      routing_key: "mytopic.*"
+    - exchange: "exchange1"
+      queue: "queue5"
+      routing_key: "mytopic.subtopic.*"
+    - exchange: "exchange1"
+      queue: "queue6"
+      routing_key: "mytopic.subtopic.#"
+    - exchange: "exchange1"
+      queue: "queue7"
+      routing_key: "mytopic.subtopic2.*"
+    - exchange: "exchange1"
+      queue: "queue8"
+      routing_key: "mytopic.#"
