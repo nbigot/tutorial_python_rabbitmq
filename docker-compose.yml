@@ -1,4 +1,4 @@
-version: '3'
+version: '3.3'
 services:
   rabbitmq:
     image: "rabbitmq:management-alpine"
@@ -29,14 +29,14 @@ services:
       - rabbitmq
       - redis
   pyconsumer:
-    build: ./pyproducer
-    deploy:
-      replicas: 6
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
+    build: ./pyconsumer
+#    deploy:
+#      replicas: 6
+#      update_config:
+#        parallelism: 2
+#        delay: 10s
+#      restart_policy:
+#        condition: on-failure
     networks:
       - backend
     volumes:
@@ -45,6 +45,36 @@ services:
       - rabbitmq
       - redis
       - pyproducer
+  pywebapi:
+    build: ./pywebapi
+    ports:
+      - "8182:80"
+    networks:
+      - backend
+    volumes:
+      - "./log:/var/log"
+    depends_on:
+      - rabbitmq
+      - redis
+  swagger-ui:
+    image: "swaggerapi/swagger-ui"
+    container_name: "swagger-ui"
+    environment:
+      - SWAGGER_JSON=/docs/swagger.yaml
+    volumes:
+      - "./swagger-ui:/docs"
+    ports:
+      - "8181:8080"
+    networks:
+      - backend
+  jupyter-notebook:
+    build: ./jupyter-notebook
+    container_name: "jupyter-notebook"
+    ports:
+      - "8888:8888"
+    networks:
+      - backend
 networks:
   backend:
-    driver: custom-driver-1
+#    driver: custom-driver-1
+

@@ -4,6 +4,7 @@ import argparse
 import json
 import logging
 import pika
+import sys
 from datetime import datetime
 from flask import Flask
 from flask_cors import CORS
@@ -115,23 +116,26 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Load the yaml configuration
-    global settings
     settings.update(load_settings(args.configfile))
     app.logger.setLevel(settings['app']['log_level'])
 
+    # Init logger for pika
+    logging.getLogger('pika').setLevel(logging.INFO)
+    pika_formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(pika_formatter)
+    logging.getLogger('pika').addHandler(stdout_handler)
+
     # Ensure RabbitMQ config from the yaml config
     try:
-        app.logger.log('INFO', event='configure rabbitmq', tags=['rabbitmq'])
+        app.logger.log(logging.INFO, msg='configure rabbitmq')
         rabbitmq_configure(settings['rabbitmq'])
     except Exception as ex:
-        app.logger.exception(ex=ex,
-                             action='configure rabbitmq',
-                             event='exception rabbitmq config',
-                             tags=['exception', 'rabbitmq'])
+        app.logger.exception('exception rabbitmq config: {}'.format(ex))
 
     # Start web server
     CORS(app)
-    app.logger.log('INFO', action='server start', tags=['server'])
+    app.logger.log(logging.INFO, 'server start')
     app.run(host=settings['app']['hostname'],
             port=settings['app']['tcp_port'],
             debug=settings['app']['flask_debug'])

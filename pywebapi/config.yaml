@@ -1,27 +1,29 @@
 app:
-  hostname: "127.0.0.1"
+  hostname: "0.0.0.0"
   tcp_port: "80"
   log_level: "DEBUG"
   flask_debug: False
 redis:
-  hostname: "localhost"
+  hostname: "redis"
   port: 6379
   db: 0
   connect_timeout: 10
 rabbitmq:
-  hostname: "localhost"
+  hostname: "rabbitmq"
   port: 5672
-  username: "guest"
-  password: "guest"
+  username: "app"
+  #username: "guest"
+  password: "app"
+  #password: "guest"
   exchanges:
     - exchange: "unprocessed"
-      type: "topic"
+      exchange_type: "topic"
       durable: True
     - exchange: "error"
-      type: "topic"
+      exchange_type: "topic"
       durable: True
     - exchange: "exchange1"
-      type: "topic"
+      exchange_type: "topic"
       durable: True
       arguments:
         alternate-exchange: "unprocessed"

@@ -4,11 +4,12 @@ import datetime
 import logging
 import json
 import argparse
+import time
 
 
 if __name__ == "__main__":
 
-	# Parse arguments
+    # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-stdout", "--stdout", action="store_true", default=False, help="Increase output verbosity")
     parser.add_argument("-configfile", "--configfile", required=True, help="Path to the yaml configfile")
@@ -24,4 +25,7 @@ if __name__ == "__main__":
 
     # Produce/Consume
     # TODO
-    print("hello world")
+    while True:
+        print("hello world producer")
+        time.sleep(1)
+
