@@ -1,12 +1,73 @@
 openapi: "3.0.0"
 info:
   version: 1.0.0
-  title: Swagger Petstore
-  license:
-    name: MIT
+  title: Web API Demo for rabbitmq
 servers:
-  - url: http://petstore.swagger.io/v1
+- url: https://localhost:8182{basePath}
+  description: Local development server
+  variables:
+    basePath:
+      default: "/"
+tags:
+- name: Test
+- name: Healthcheck
+- name: Monitoring
+- name: Command
+- name: pets
 paths:
+  /ping:
+    get:
+      tags:
+      - Test
+      - Healthcheck
+      - Monitoring
+      summary: This is for test purpose only.
+      description: 'Reply pong.'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  echo:
+                    type: string
+                    description: The pong response
+                example:
+                  echo: pong
+  /hello/{name}:
+    get:
+      tags:
+      - name: Command
+      summary: A hello command.
+      description: 'Say hello to someone.'
+      parameters:
+        - name: name
+          in: query
+          description: The name of the one to say hello to.
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Success
+  /custom/{routingkey}:
+    get:
+      tags:
+      - name: Command
+      summary: Create a message.
+      description: 'Send a message to the exchange using the givent routing key.'
+      parameters:
+        - name: routingkey
+          in: query
+          description: The routing key for the message.
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Success
   /pets:
     get:
       summary: List all pets
@@ -107,4 +168,3 @@ components:
           format: int32
         message:
           type: string
-

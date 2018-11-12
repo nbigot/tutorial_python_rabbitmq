@@ -87,7 +87,7 @@ def hello(name: str):
         }
         msg = json.dumps(json_message, ensure_ascii=False).encode("utf-8")
         rabbitmq_publish_message(exchange="exchange1", routing_key="hello_topic", msg=msg)
-        return 'Added hello message to: {}'.format(name), 200
+        return 'Added hello message to: {}'.format(name), 201
     except Exception as ex:
         return 'Error: {}'.format(ex), 500
 
@@ -103,7 +103,7 @@ def custom(routing_key: str):
         }
         msg = json.dumps(json_message, ensure_ascii=False).encode("utf-8")
         rabbitmq_publish_message(exchange="exchange1", routing_key=routing_key, msg=msg)
-        return 'Added message to specific routing_key: {}'.format(routing_key), 200
+        return 'Added message to specific routing_key: {}'.format(routing_key), 201
     except Exception as ex:
         return 'Error: {}'.format(ex), 500
 
