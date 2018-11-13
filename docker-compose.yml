@@ -30,13 +30,6 @@ services:
       - redis
   pyconsumer:
     build: ./pyconsumer
-#    deploy:
-#      replicas: 6
-#      update_config:
-#        parallelism: 2
-#        delay: 10s
-#      restart_policy:
-#        condition: on-failure
     networks:
       - backend
     volumes:
@@ -68,7 +61,7 @@ services:
     networks:
       - backend
   jupyter-notebook:
-    build: ./jupyter-notebook
+    image: "jupyter/minimal-notebook"
     container_name: "jupyter-notebook"
     ports:
       - "8888:8888"
@@ -76,5 +69,4 @@ services:
       - backend
 networks:
   backend:
-#    driver: custom-driver-1
 

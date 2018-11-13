@@ -6,6 +6,7 @@ import json
 import logging
 import time
 import pika
+import redis
 import sys
 from yaml import load, YAMLError
 
@@ -114,13 +115,18 @@ class ExampleConsumer(object):
     def setup_exchanges(self):
         LOGGER.info('Declaring exchanges')
         exchanges_def = settings['rabbitmq']['exchanges']
-        for idx, exchange in enumerate(exchanges_def):
-            # single callback for the last exchange setup
-            callback = self.on_exchange_declareok if (idx == len(exchanges_def) - 1) else None
-            self._channel.exchange_declare(callback, **exchange)
+        for exchange in exchanges_def:
+            self._channel.exchange_declare(None, **exchange)
+
+        self.on_exchange_declareok()
+
+        #for idx, exchange in enumerate(exchanges_def):
+        #    # single callback for the last exchange setup
+        #    callback = self.on_exchange_declareok if (idx == len(exchanges_def) - 1) else None
+        #    self._channel.exchange_declare(callback, **exchange)
 
 
-    def on_exchange_declareok(self, unused_frame):
+    def on_exchange_declareok(self, *_args, **kwargs):
         LOGGER.info('Exchange declared')
         self.setup_queues()
 
@@ -128,22 +134,34 @@ class ExampleConsumer(object):
     def setup_queues(self):
         LOGGER.info('Declaring queues')
         queues_def = settings['rabbitmq']['queues']
-        for idx, queue in enumerate(queues_def):
-             # single callback for the last queue setup
-             callback = self.on_queue_declareok if (idx == len(queues_def) - 1) else None
-             self._channel.queue_declare(callback, **queue)
+
+        for queue in queues_def:
+             self._channel.queue_declare(None, **queue)
+
+        self.on_queue_declareok()
+
+        #for idx, queue in enumerate(queues_def):
+        #     # single callback for the last queue setup
+        #     callback = self.on_queue_declareok if (idx == len(queues_def) - 1) else None
+        #     self._channel.queue_declare(callback, **queue)
 
 
-    def on_queue_declareok(self, method_frame):
+    def on_queue_declareok(self, *_args, **kwargs):
         LOGGER.info('Bindings')
         bindings_def = settings['rabbitmq']['bindings']
-        for idx, binding in enumerate(bindings_def):
-            # single callback for the last binding setup
-            callback = self.on_bindok if (idx == len(bindings_def) - 1) else None
-            self._channel.queue_bind(self.on_bindok, **binding)
+
+        for binding in bindings_def:
+            self._channel.queue_bind(None, **binding)
+
+        self.on_bindok()
+
+        #for idx, binding in enumerate(bindings_def):
+        #    # single callback for the last binding setup
+        #    callback = self.on_bindok if (idx == len(bindings_def) - 1) else None
+        #    self._channel.queue_bind(self.on_bindok, **binding)
 
 
-    def on_bindok(self, unused_frame):
+    def on_bindok(self, *_args, **kwargs):
         LOGGER.info('Queue bound')
         self.start_consuming()
 
@@ -183,6 +201,17 @@ class ExampleConsumer(object):
         """
         LOGGER.info('Received message # %s from %s: %s',
                     basic_deliver.delivery_tag, properties.app_id, body)
+
+        redis_cnx = redis.Redis( host=settings['redis']['hostname'],
+                                 port=settings['redis']['port'],
+                                 db=settings['redis']['db'] )
+        key = 'demo:key1'
+        value = json.dumps( {"from": "pyconsumer", "body": body.decode('utf-8'), 
+                             "date": datetime.datetime.now().strftime( "%Y%m%d%H%M%S" ) } )
+        redis_cnx.set( key, value, ex=3600 )
+        redis_cnx.incr( 'demo:cpt' )
+        LOGGER.info('Wrote key to redis: {} = {}'.format(key, value))
+
         self.acknowledge_message(basic_deliver.delivery_tag)
 
 
