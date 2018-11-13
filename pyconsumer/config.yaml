@@ -1,0 +1,57 @@
+app:
+  log_level: "DEBUG"
+redis:
+  hostname: "redis"
+  port: 6379
+  db: 0
+  connect_timeout: 10
+rabbitmq:
+  hostname: "rabbitmq"
+  port: 5672
+  username: "app"
+  #username: "guest"
+  password: "app"
+  #password: "guest"
+  queuename: "queue1"
+  exchanges:
+    - exchange: "unprocessed"
+      exchange_type: "topic"
+      durable: True
+    - exchange: "error"
+      exchange_type: "topic"
+      durable: True
+    - exchange: "exchange1"
+      exchange_type: "topic"
+      durable: True
+      arguments:
+        alternate-exchange: "unprocessed"
+  queues:
+    - queue: "unprocessed"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-message-ttl: 604800
+    - queue: "error"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-message-ttl: 604800
+    - queue: "queue1"
+      durable: True
+      exclusive: False
+      auto_delete: False
+      arguments:
+        x-dead-letter-exchange: "error"
+  bindings:
+    - exchange: "unprocessed"
+      queue: "unprocessed"
+      routing_key: "*"
+    - exchange: "error"
+      queue: "error"
+      routing_key: "*"
+    - exchange: "exchange1"
+      queue: "queue1"
+      routing_key: "hello_topic"
+

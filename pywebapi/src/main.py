@@ -15,6 +15,8 @@ from yaml import load, YAMLError
 app = Flask(__name__)
 
 settings = dict()
+g_rabbitmq_cnx = None
+g_rabbitmq_channel = None
 
 
 def load_settings(filename: str) -> dict:
@@ -64,6 +66,10 @@ def rabbitmq_publish_message(exchange: str, routing_key: str, msg: str) -> None:
     connection.close()
 
 
+def rabbitmq_publish_message_with_opened_socket(exchange: str, routing_key: str, msg: str) -> None:
+    g_rabbitmq_channel.basic_publish(exchange=exchange, routing_key=routing_key, body=msg)
+
+
 @app.route('/')
 def home():
     """Renders the home page."""
@@ -86,7 +92,7 @@ def hello(name: str):
             'say hello to': name
         }
         msg = json.dumps(json_message, ensure_ascii=False).encode("utf-8")
-        rabbitmq_publish_message(exchange="exchange1", routing_key="hello_topic", msg=msg)
+        rabbitmq_publish_message_with_opened_socket(exchange="exchange1", routing_key="hello_topic", msg=msg)
         return 'Added hello message to: {}'.format(name), 201
     except Exception as ex:
         return 'Error: {}'.format(ex), 500
@@ -132,6 +138,8 @@ if __name__ == "__main__":
         rabbitmq_configure(settings['rabbitmq'])
     except Exception as ex:
         app.logger.exception('exception rabbitmq config: {}'.format(ex))
+
+    g_rabbitmq_cnx, g_rabbitmq_channel = rabbitmq_connect()
 
     # Start web server
     CORS(app)

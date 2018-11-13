@@ -1,6 +1,7 @@
 FROM python:3.6-alpine
 WORKDIR "/app"
 COPY src ./src/
+COPY config.yaml /app/config.yaml
 RUN pip install --no-cache-dir -r ./src/requirements.txt
 VOLUME /var/log/
 STOPSIGNAL SIGINT
