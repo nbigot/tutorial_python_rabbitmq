@@ -5,6 +5,7 @@ import json
 import logging
 import pika
 import sys
+import time
 from datetime import datetime
 from flask import Flask
 from flask_cors import CORS
@@ -29,6 +30,7 @@ def load_settings(filename: str) -> dict:
 
 
 def rabbitmq_connect():
+    """Connect to Rabbitmq server"""
     credentials = pika.PlainCredentials(
         username=settings['rabbitmq']['username'],
         password=settings['rabbitmq']['password'])
@@ -41,9 +43,8 @@ def rabbitmq_connect():
     return connection, channel
 
 
-def rabbitmq_configure(config: dict) -> None:
+def rabbitmq_configure(connection, channel, config: dict) -> None:
     """Configure rabbitmq server"""
-    connection, channel = rabbitmq_connect()
 
     # Declare the exchanges
     for exchange in config.get('exchanges'):
@@ -114,6 +115,22 @@ def custom(routing_key: str):
         return 'Error: {}'.format(ex), 500
 
 
+def wait_for_rabbitmq_ready(logger):
+    # Ensure connexion with RabbitMQ
+    logger.log(logging.INFO, msg='Connect to rabbitmq...')
+
+    while True:
+        try:
+            rabbitmq_cnx, rabbitmq_channel = rabbitmq_connect()
+            logger.log(logging.INFO, "Connected with rabbitmq server.")
+            return rabbitmq_cnx, rabbitmq_channel
+        except (KeyboardInterrupt, SystemExit):
+            sys.exit()
+        except pika.exceptions.AMQPConnectionError:
+            logger.log(logging.INFO, "Waiting to connect rabbitmq server: sleep 1 sec...")
+            time.sleep(1)
+
+
 if __name__ == "__main__":
     # Parse arguments
     parser = argparse.ArgumentParser()
@@ -132,14 +149,14 @@ if __name__ == "__main__":
     stdout_handler.setFormatter(pika_formatter)
     logging.getLogger('pika').addHandler(stdout_handler)
 
+    g_rabbitmq_cnx, g_rabbitmq_channel = wait_for_rabbitmq_ready(logger=app.logger)
+
     # Ensure RabbitMQ config from the yaml config
     try:
         app.logger.log(logging.INFO, msg='configure rabbitmq')
-        rabbitmq_configure(settings['rabbitmq'])
+        rabbitmq_configure(g_rabbitmq_cnx, g_rabbitmq_channel, settings['rabbitmq'])
     except Exception as ex:
         app.logger.exception('exception rabbitmq config: {}'.format(ex))
-
-    g_rabbitmq_cnx, g_rabbitmq_channel = rabbitmq_connect()
 
     # Start web server
     CORS(app)

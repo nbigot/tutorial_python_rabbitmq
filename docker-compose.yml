@@ -6,8 +6,19 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_PASS=app
+      - RABBITMQ_DEFAULT_USER=app
     networks:
       - backend
+    healthcheck:
+      timeout: 5s
+      interval: 5s
+      retries: 5
+      test:
+        - "CMD"
+        - "rabbitmqctl"
+        - "status"
   redis:
     image: "redis:alpine"
     container_name: redis
@@ -19,17 +30,18 @@ services:
     volumes:
       - "./db/redis/etc/redis.conf:/usr/local/etc/redis/redis.conf"
       - "./db/redis/data:/data"
-  pyproducer:
-    build: ./pyproducer
-    networks:
-      - backend
-    volumes:
-      - "./log:/var/log"
-    depends_on:
-      - rabbitmq
-      - redis
+    healthcheck:
+      timeout: 5s
+      interval: 5s
+      retries: 5
+      test:
+        - "CMD"
+        - "sh"
+        - "-c"
+        - "redis-cli -h 127.0.0.1 ping | grep PONG"
   pyconsumer:
     build: ./pyconsumer
+    container_name: pyconsumer
     networks:
       - backend
     volumes:
@@ -37,9 +49,9 @@ services:
     depends_on:
       - rabbitmq
       - redis
-      - pyproducer
   pywebapi:
     build: ./pywebapi
+    container_name: pywebapi
     ports:
       - "8182:80"
     networks:
@@ -49,6 +61,11 @@ services:
     depends_on:
       - rabbitmq
       - redis
+    healthcheck:
+      test: curl --fail -s http://localhost:80/ping || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
   swagger-ui:
     image: "swaggerapi/swagger-ui"
     container_name: "swagger-ui"
@@ -69,4 +86,3 @@ services:
       - backend
 networks:
   backend:
-

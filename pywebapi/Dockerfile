@@ -1,4 +1,5 @@
 FROM python:3.6-alpine
+RUN apk add --no-cache curl
 WORKDIR "/app"
 COPY src ./src/
 COPY config.yaml /app/config.yaml

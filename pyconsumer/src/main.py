@@ -317,12 +317,14 @@ if __name__ == "__main__":
 
     while True:
         try:
-            #g_rabbitmq_cnx, g_rabbitmq_channel = rabbitmq_connect()
+            rabbitmq_cnx, rabbitmq_channel = rabbitmq_connect()
             logger.log(logging.INFO, "Connected with rabbitmq server.")
+            del rabbitmq_channel
+            del rabbitmq_cnx
             break
         except (KeyboardInterrupt, SystemExit):
             sys.exit()
-        except:
+        except pika.exceptions.AMQPConnectionError:
             logger.log(logging.INFO, "Waiting to connect rabbitmq server: sleep 1 sec...")
             time.sleep(1)
 
