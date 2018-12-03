@@ -23,7 +23,7 @@ https://dev.to/usamaashraf/microservices--rabbitmq-on-docker-e2f
 
 ## Rabbitmq
 
-Default login/password for gui is guest/guest
+Default login/password for gui is app/app
 
 http://localhost:15672/
 
