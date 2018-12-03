@@ -40,9 +40,9 @@ Flask is using werkzeug http server which is not optimal.
 
     $ siege -r 10 -c 50 --content-type="application/json" 'http://localhost:8182/hello/nico POST'
 
+```
 Results with create a rabbitmq cnx and release it for each message:
 
-```
 Transactions:                    500 hits
 Availability:                 100.00 %
 Elapsed time:                   9.66 secs
@@ -55,6 +55,7 @@ Successful transactions:         500
 Failed transactions:               0
 Longest transaction:            0.86
 Shortest transaction:           0.04
+
 
 Results with reusing an already opened rabbitmq cnx:
 
