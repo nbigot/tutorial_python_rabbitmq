@@ -42,6 +42,7 @@ Flask is using werkzeug http server which is not optimal.
 
 Results with create a rabbitmq cnx and release it for each message:
 
+```
 Transactions:                    500 hits
 Availability:                 100.00 %
 Elapsed time:                   9.66 secs
@@ -69,7 +70,7 @@ Successful transactions:         500
 Failed transactions:               0
 Longest transaction:            0.26
 Shortest transaction:           0.00
-
+```
 
 ## Docker stuff
 
