@@ -83,6 +83,26 @@ def ping():
     return 'pong', 200
 
 
+@app.route('/fail/<string:name>', methods=['POST'])
+def fail(name: str):
+    """Create a new message and send it to Rabbitmq, it will probably fail due to ChannelClosed"""
+    try:
+        json_message = {
+            'uid': str(uuid4()),
+            'creation_date': datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            'say hello to': name
+        }
+        msg = json.dumps(json_message, ensure_ascii=False).encode("utf-8")
+        rabbitmq_publish_message_with_opened_socket(exchange="exchange1", routing_key="hello_topic", msg=msg)
+        return 'Added hello message to: {}'.format(name), 201
+    except pika.exceptions.ChannelClosed:
+        return 'Error: channel closed', 502
+    except pika.exceptions.ConnectionClosed:
+        return 'Error: connexion closed', 501
+    except Exception as ex:
+        return 'Error: {}'.format(ex), 500
+
+
 @app.route('/hello/<string:name>', methods=['POST'])
 def hello(name: str):
     """Create a new message and send it to Rabbitmq"""
@@ -93,7 +113,7 @@ def hello(name: str):
             'say hello to': name
         }
         msg = json.dumps(json_message, ensure_ascii=False).encode("utf-8")
-        rabbitmq_publish_message_with_opened_socket(exchange="exchange1", routing_key="hello_topic", msg=msg)
+        rabbitmq_publish_message(exchange="exchange1", routing_key="hello_topic", msg=msg)
         return 'Added hello message to: {}'.format(name), 201
     except Exception as ex:
         return 'Error: {}'.format(ex), 500
